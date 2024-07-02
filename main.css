@@ -82,8 +82,7 @@ body {
             }
 }
 canvas {
-    width: 100%;
-    height: 100%;
+    height: 100vh;
     display: block;
 }
 
@@ -108,6 +107,7 @@ canvas {
         flex-wrap: wrap;
         flex-direction: column-reverse;
         justify-content: center;
+        
 
  }
 .grid {
@@ -566,13 +566,9 @@ html {
 }
 
 .top-sphere {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 100%;
-    height: 100%;
     margin: auto;
-    background: radial-gradient(circle at 50% center, #7847dd 10%, #1c1c1c 30%);
+        display: flex;
+        width: 100vh;
             
 }
 
@@ -585,9 +581,12 @@ html {
         text-align: center;
         font-family: "Russo One", sans-serif;
                 font-weight: 400;
+                font-size: 3rem;
                 font-style: normal;
         margin-top: 80px;
-        /* Mix-blend-mode: difference; */
+
+      
+        Mix-blend-mode: difference;
 }
 
 .about-me {

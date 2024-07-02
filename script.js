@@ -7,6 +7,16 @@ import gsap from '/node_modules/gsap/index.js'
 
 import Medium from 'https://unpkg.com/css.medium.js@1.0.0/css.medium.js';
 
+import { SavePass } from 'three/examples/jsm/postprocessing/SavePass.js'
+import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js'
+import { BlendShader } from 'three/examples/jsm/shaders/BlendShader.js'
+import { CopyShader } from 'three/examples/jsm/shaders/CopyShader.js'
+
+
+import fragmentShader from './sheaders/fragment';
+import vertexShader from './sheaders/vertex';
+
+
 const medium = new Medium({
     features: {
         xy: true,
@@ -259,7 +269,8 @@ function main() {
         controls2.noZoom = true;
         controls2.noPan = true;
 
-   
+        
+        
     
 
         // const fillLight = new THREE.PointLight(0xffffff, 5000, 12, 5)
@@ -324,88 +335,88 @@ function main() {
 
     const sceneInitFunctionsByName = {
 
-//         'sphere': (elem) => {
-
-//             const { scene, camera, camera2, controls } = makeScene(elem);
+        'sphere': (elem) => {
+          
+            // const renderer = new THREE.WebGLRenderer();
+            renderer.setSize(window.clientWidth, window.clie);
+            // renderer.setAnimationLoop(animate);
             
-//             const grassAlbedo2 = new THREE.TextureLoader().load('static/space-cruiser-panels2_albedo.png');
-//             const grassAo2 = new THREE.TextureLoader().load('static/space-cruiser-panels2_ao.png');
-//             const grassHeight2 = new THREE.TextureLoader().load('static/space-cruiser-panels2_height.png');
-//             const grassMetalic2 = new THREE.TextureLoader().load('static/space-cruiser-panels2_metallic.png');
-//             const grassNormal2 = new THREE.TextureLoader().load('static/space-cruiser-panels2_normal-ogl.png');
-//             const grassRougnes2 = new THREE.TextureLoader().load('static/space-cruiser-panels2_roughness.png');
+            document.body.appendChild(renderer.domElement);
+
+            
+            const { scene, camera, camera2, controls } = makeScene(elem);
+            
+            const ROTATION_SPEED = 0.02
+            const MOTION_BLUR_AMOUNT = 0.725
+
+            camera.fov = 72;
+
+            const geometry = new THREE.SphereGeometry(1, 100, 100)
+            const material = new THREE.ShaderMaterial({
+                vertexShader: vertexShader,
+                fragmentShader: fragmentShader,
+                uniforms: {
+                    uTime: { value: 0 }
+                }
+
+            });
+            const ico = new THREE.Mesh(geometry, material);
+            scene.add(ico);
+
+            camera.position.set(0, -2, 0);
+
+            const wireFrame = new THREE.LineSegments(geometry, material);
+            const WIREFRAME_DELTA = 10.7;
+            wireFrame.scale.setScalar(3 + WIREFRAME_DELTA);
+            ico.add(wireFrame);
+            
+
+            const renderTargetParameters = {
+                minFilter: THREE.LinearFilter,
+                magFilter: THREE.LinearFilter,
+                stencilBuffer: false,
+            }
+
+            // save pass
+            const savePass = new SavePass(new THREE.WebGLRenderTarget(window.innerWidth, window.innerHeight, renderTargetParameters))
+
+            // blend pass
+            const blendPass = new ShaderPass(BlendShader, 'tDiffuse1')
+            blendPass.uniforms['tDiffuse2'].value = savePass.renderTarget.texture
+            blendPass.uniforms['mixRatio'].value = MOTION_BLUR_AMOUNT
+
+            // output pass
+            const outputPass = new ShaderPass(CopyShader)
+            outputPass.renderToScreen = true
 
 
-//             const sphereGeometry2 = new THREE.SphereGeometry(1.5, 32, 32);
-//             const uv2sphereGeometry2 = new THREE.BufferAttribute(sphereGeometry2.attributes.uv.array, 2);
-//             sphereGeometry2.setAttribute('uv2', uv2sphereGeometry2);
+            controls.update();
 
-//             const material2 = new THREE.MeshStandardMaterial();
-//             material2.map = grassAlbedo2;
-//             material2.roughnessMap = grassRougnes2;
-//             material2.roughness = 1;
-//             material2.metalnessMap = grassMetalic2;
-//             material2.metalness = 1;
-//             material2.normalMap = grassNormal2;
-//             material2.displacementMap = grassHeight2;
-//             material2.displacementScale = 0.1
+            return (time, rect) => {
 
-//             material2.aoMap = grassAo2;
-//             material2.aoMapIntensity = 1;
-//             material2.side = 2;
+                camera.aspect = rect.width / rect.height;
+                camera.updateProjectionMatrix();
+                camera2.aspect = rect.width / rect.height;
+                camera2.updateProjectionMatrix();
+                controls.handleResize();
+                controls.update();
+                renderer.shadowMap.enabled = true
+                renderer.render(scene, camera, camera2);
+                ico.rotation.x += 0.001;
+                ico.position.set(1,1,0)
+                material.uniforms.uTime.value += 0.005;
 
-//             const sphereGeo2 = new THREE.Mesh(sphereGeometry2, material2);
-//             sphereGeo2.position.x = 0;
-//             sphereGeo2.castShadow = true;
-//             scene.add(sphereGeo2);
+                controls.update();
+
+                renderer.render(scene, camera);
 
 
-//             // пользоввательские данные 
-//             sphereGeo2.userData.draggable = true;
-//             sphereGeo2.userData.name = 'SPHERY2'
+                
+            
 
+            };
 
-
-
-// // СВЕТ _______________________________________________
-//             // const spotLight = new THREE.SpotLight(0xffffff, 100);
-//             // spotLight.position.set(-3, 7, -3);
-//             // spotLight.angle = Math.PI / 9;
-//             // spotLight.penumbra = 1;
-//             // spotLight.decay = 2;
-//             // spotLight.castShadow = true;
-
-//             // spotLight.shadow.mapSize.width = 1024;
-//             // spotLight.shadow.mapSize.height = 1024;
-//             // spotLight.shadow.radius = 50;
-
-//             // spotLight.shadow.camera.near = 1;
-//             // spotLight.shadow.camera.far = 100;
-//             // spotLight.shadow.camera.fov = 30;
-
-//             // spotLight.shadow.camera.left = 5;
-//             // spotLight.shadow.camera.right = 5;
-//             // spotLight.shadow.camera.top = 5;
-//             // spotLight.shadow.camera.bottom = 5;
-
-//             // scene.add(spotLight)
-
-//             return (time, rect) => {
-
-//                 camera.aspect = rect.width / rect.height;
-//                 camera.updateProjectionMatrix();
-//                 camera2.aspect = rect.width / rect.height;
-//                 // sphereGeo2.rotation.x += 0.005;
-//                 // sphereGeo2.rotation.y += 0.005;
-//                 camera2.updateProjectionMatrix();
-//                 controls.handleResize();
-//                 controls.update();
-//                 renderer.shadowMap.enabled = true
-//                 renderer.render(scene, camera, camera2);
-
-//             };
-
-//         },
+        },
 
 // -------------------------------------------
 
@@ -541,9 +552,6 @@ function main() {
         },
 
 //------------------------------------
-
-
-
         'shoes': (elem) => {
 
             const { scene, camera, camera2, controls } = makeScene(elem);
@@ -648,7 +656,10 @@ function main() {
             var material = new THREE.MeshLambertMaterial({ color: 0x5837CD });
             var mesh = new THREE.Mesh(geometry, material);
 
-            camera.position.z = 0;
+            // camera.position.z = 0;
+          
+
+
             scene.add(mesh);
 
             let meshX = -30;
